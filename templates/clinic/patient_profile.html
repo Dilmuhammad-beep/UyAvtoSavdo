@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}{{ patient.full_name }} — CareTrack TYBT{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'patient-list' %}">Bemorlar</a></li>
+        <li class="breadcrumb-item active">{{ patient.full_name }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card shadow mb-3">
+            <div class="card-header"><h5><i class="bi bi-person"></i> Bemor ma'lumotlari</h5></div>
+            <div class="card-body">
+                <p><strong>Ism:</strong> {{ patient.full_name }}</p>
+                <p><strong>Tug'ilgan sana:</strong> {{ patient.date_of_birth|date:"d.m.Y" }}</p>
+                <p><strong>Jinsi:</strong> {{ patient.get_gender_display }}</p>
+                <p><strong>Telefon:</strong> {{ patient.phone|default:"—" }}</p>
+                <p><strong>Email:</strong> {{ patient.email|default:"—" }}</p>
+                <p><strong>Manzil:</strong> {{ patient.address|default:"—" }}</p>
+                <p><strong>Holat:</strong>
+                    {% if patient.is_active %}
+                    <span class="badge bg-success">Faol</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Nofaol</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="card shadow mb-3">
+            <div class="card-header"><h5><i class="bi bi-person-badge"></i> Biriktirilgan shifokor</h5></div>
+            <div class="card-body">
+                {% if patient.doctor %}
+                <p><strong>Ism:</strong> Dr. {{ patient.doctor.full_name }}</p>
+                <p><strong>Mutaxassislik:</strong> {{ patient.doctor.specialty }}</p>
+                <p><strong>Bo'lim:</strong> {{ patient.doctor.get_department_display }}</p>
+                <p><strong>Telefon:</strong> {{ patient.doctor.phone|default:"—" }}</p>
+                {% else %}
+                <p class="text-muted">Shifokor biriktirilmagan.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5><i class="bi bi-clipboard2-pulse"></i> Kasallik / Tashxis tarixi ({{ patient.diseases.count }})</h5>
+            </div>
+            <div class="card-body">
+                {% if patient.diseases.all %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>ICD kodi</th>
+                                <th>Nomi</th>
+                                <th>Og'irlik</th>
+                                <th>Tashxis sanasi</th>
+                                <th>Holat</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for disease in patient.diseases.all %}
+                            <tr>
+                                <td><span class="badge bg-secondary">{{ disease.icd_code }}</span></td>
+                                <td>{{ disease.name }}</td>
+                                <td>
+                                    {% if disease.severity == 'mild' %}
+                                    <span class="badge bg-success">{{ disease.get_severity_display }}</span>
+                                    {% elif disease.severity == 'moderate' %}
+                                    <span class="badge bg-warning">{{ disease.get_severity_display }}</span>
+                                    {% elif disease.severity == 'severe' %}
+                                    <span class="badge bg-danger">{{ disease.get_severity_display }}</span>
+                                    {% else %}
+                                    <span class="badge bg-dark">{{ disease.get_severity_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ disease.diagnosed_date|date:"d.m.Y" }}</td>
+                                <td>
+                                    {% if disease.is_active %}
+                                    <span class="badge bg-success">Faol</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Nofaol</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% if disease.description or disease.notes %}
+                            <tr>
+                                <td colspan="5" class="small text-muted ps-4">
+                                    {% if disease.description %}{{ disease.description }}{% endif %}
+                                    {% if disease.notes %}<br><em>Izoh: {{ disease.notes }}</em>{% endif %}
+                                </td>
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">Tashxislar topilmadi.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

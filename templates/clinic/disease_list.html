@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Tashxislar — CareTrack TYBT{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Kasallik / Tashxis yozuvlari</h2>
+</div>
+
+<form class="row g-2 mb-3" method="get">
+    <div class="col-md-4">
+        <input type="text" class="form-control" name="q" value="{{ q }}" placeholder="ICD kodi yoki nomi bo'yicha qidirish...">
+    </div>
+    <div class="col-md-3">
+        <select name="severity" class="form-select">
+            <option value="">Barcha og'irlik darajalari</option>
+            <option value="mild" {% if severity == 'mild' %}selected{% endif %}>Yengil</option>
+            <option value="moderate" {% if severity == 'moderate' %}selected{% endif %}>O'rtacha</option>
+            <option value="severe" {% if severity == 'severe' %}selected{% endif %}>Og'ir</option>
+            <option value="critical" {% if severity == 'critical' %}selected{% endif %}>Juda og'ir</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">Qidirish</button>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>ICD kodi</th>
+                <th>Nomi</th>
+                <th>Og'irlik</th>
+                <th>Bemor</th>
+                <th>Tashxis sanasi</th>
+                <th>Holat</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for disease in diseases %}
+            <tr>
+                <td><span class="badge bg-secondary">{{ disease.icd_code }}</span></td>
+                <td>{{ disease.name }}</td>
+                <td>
+                    {% if disease.severity == 'mild' %}
+                    <span class="badge bg-success">{{ disease.get_severity_display }}</span>
+                    {% elif disease.severity == 'moderate' %}
+                    <span class="badge bg-warning">{{ disease.get_severity_display }}</span>
+                    {% elif disease.severity == 'severe' %}
+                    <span class="badge bg-danger">{{ disease.get_severity_display }}</span>
+                    {% else %}
+                    <span class="badge bg-dark">{{ disease.get_severity_display }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'patient-profile' disease.patient.pk %}">{{ disease.patient.full_name }}</a>
+                </td>
+                <td>{{ disease.diagnosed_date|date:"d.m.Y" }}</td>
+                <td>
+                    {% if disease.is_active %}
+                    <span class="badge bg-success">Faol</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Nofaol</span>
+                    {% endif %}
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="6" class="text-center text-muted">Tashxislar topilmadi.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
